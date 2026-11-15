@@ -63,7 +63,7 @@ for rep in range(int(np.ceil(DUR / (chord_len*len(CHORDS))))):
 # 唱片底噪
 crk = (rng.random(N) < 0.00035).astype(float)
 crk = np.convolve(crk, np.exp(-np.arange(220)/SR*900), 'same') * rng.random(N)
-mix[:, 0] += crk * 0.05; mix[:, 1] += np.roll(crk, 37) * 0.05
+mix[:, 0] += crk * 0.009; mix[:, 1] += np.roll(crk, 37) * 0.009
 
 # ---------------- 音效合成器 ----------------
 def tick(f=2600, d=0.028, g=0.10):
@@ -144,6 +144,15 @@ for i in range(3):
 add(mix, tick(1500, g=0.07), 28.10)
 add(mix, thock(160, 0.12, 0.12), 28.60, 0.09)
 add(mix, whoosh(1.2, 0.05, up=False), 30.60)
+
+# ---------------- 低通：砍掉 10kHz 以上的嘶嘶底噪 ----------------
+def lowpass(x, cutoff, order=2):
+    n = x.shape[0]
+    X = np.fft.rfft(x, axis=0)
+    f = np.fft.rfftfreq(n, 1/SR)
+    H = 1.0/(1.0+(f/cutoff)**(2*order))
+    return np.fft.irfft(X*H[:, None], n=n, axis=0)
+mix = lowpass(mix, 10500, 2)
 
 # ---------------- 母带 ----------------
 l, r = mix[:, 0], mix[:, 1]
