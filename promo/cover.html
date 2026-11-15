@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>DSH Safe Restart — 封面</title>
+<link rel="stylesheet" href="fonts/notoserifsc.css">
+<style>
+@font-face{font-family:'Instrument Serif';src:url(fonts/instrument-serif-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal}
+@font-face{font-family:'JetBrains Mono';src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'JetBrains Mono';src:url(fonts/jetbrains-mono-latin-700-normal.woff2) format('woff2');font-weight:700}
+:root{
+  --paper:#0a0d16;--ink:#f2f4f8;--ink2:#c7cbd6;--mut:#78808f;
+  --line:#232837;--blue:#5b79ff;--acc:#e86a3d;--green:#4fae6e;--red:#e05a3a;
+  --sans:'Segoe UI','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono',Consolas,monospace;
+  --disp:'Instrument Serif','Noto Serif SC',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1146px;height:717px;overflow:hidden}
+body{background:var(--paper);font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;overflow:hidden;
+  background:
+    radial-gradient(700px 440px at 16% 6%,rgba(91,121,255,.16),rgba(91,121,255,0) 62%),
+    radial-gradient(760px 540px at 92% 98%,rgba(232,106,61,.12),rgba(232,106,61,0) 64%),
+    var(--paper)}
+#grid{position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:38px 38px}
+#vig{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 96% at 50% 44%,rgba(0,0,0,0) 46%,rgba(0,0,0,.6) 100%)}
+
+/* 安全区：4:3 裁切只保留 x 95..1051，所有内容在 108..1038 内 */
+#brand{position:absolute;left:130px;top:46px;display:flex;align-items:center;gap:10px}
+#mark{width:27px;height:27px;border-radius:7px;background:linear-gradient(145deg,#5b79ff,#2c3a6e);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(91,121,255,.42)}
+#mark span{font-family:var(--mono);font-weight:700;font-size:13px;color:#fff;letter-spacing:-.5px}
+#brandText{font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--mut);text-transform:uppercase}
+#tag{margin-left:6px;font-size:11px;padding:2px 8px;border-radius:5px;
+  background:rgba(91,121,255,.14);border:1px solid rgba(91,121,255,.34);color:#9db0ff;letter-spacing:.05em}
+
+#copy{position:absolute;left:130px;top:160px;width:458px}
+#kicker{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--acc);margin-bottom:16px}
+#h1{font-family:var(--disp);font-size:64px;line-height:1.1;letter-spacing:.01em;font-weight:400}
+#h1 em{font-style:normal;color:var(--acc);text-shadow:0 0 40px rgba(232,106,61,.4)}
+#h1 .q{color:var(--mut);font-size:44px}
+#sub{margin-top:16px;font-size:16px;line-height:1.6;color:var(--ink2);width:420px;letter-spacing:.01em}
+#sub b{color:var(--ink);font-weight:600}
+#sub .m{color:var(--mut)}
+
+#foot{position:absolute;left:130px;bottom:52px;display:flex;align-items:center;gap:10px}
+.pill{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);
+  padding:6px 10px;border-radius:7px;background:rgba(255,255,255,.045);border:1px solid var(--line);white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(79,174,110,.8)}
+.mono{font-family:var(--mono)}
+
+#win{position:absolute;right:130px;top:126px;width:430px;border-radius:11px;overflow:hidden;
+  background:#0d1018;border:1px solid var(--line);box-shadow:0 30px 64px rgba(0,0,0,.6),0 8px 20px rgba(0,0,0,.4)}
+#bar{height:30px;display:flex;align-items:center;padding:0 10px;gap:5px;
+  background:#141826;border-bottom:1px solid var(--line)}
+.tl{width:8px;height:8px;border-radius:50%}
+#barTitle{margin-left:7px;font-family:var(--mono);font-size:10.5px;color:var(--mut)}
+#term{padding:13px 13px 16px;font-family:var(--mono);font-size:11px;line-height:1.8;color:#b9c0cf}
+.l{white-space:pre;overflow:hidden}
+.dim{color:#5d6474}
+.rd{color:var(--red)}
+.gn{color:var(--green)}
+.bl{color:#7d97ff}
+.am{color:#d99a3d}
+.hl{background:rgba(232,106,61,.14);border-left:2px solid var(--acc);padding-left:7px;margin-left:-9px}
+
+#nums{position:absolute;right:130px;bottom:52px;display:flex;align-items:flex-end;gap:16px}
+.n{text-align:right}
+.n .v{font-family:var(--disp);font-size:38px;line-height:1;color:var(--ink)}
+.n .v.bad{color:var(--red)}
+.n .v.ok{color:var(--green)}
+.n .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mut);margin-top:6px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="grid"></div>
+
+  <div id="brand">
+    <div id="mark"><span>D</span></div>
+    <div id="brandText">DeepSeek Harness</div>
+    <div id="tag">Windows</div>
+  </div>
+
+  <div id="copy">
+    <div id="kicker">重 启 前 的 一 次 体 检</div>
+    <div id="h1">重启前<br>先<em>体检</em></div>
+    <div id="sub"><b>27 个插件</b>能不能加载，十秒就知道<br><span class="m">崩了也没事 —— 快照在那儿，自动回滚</span></div>
+  </div>
+
+  <div id="win">
+    <div id="bar">
+      <div class="tl" style="background:#e05a3a"></div>
+      <div class="tl" style="background:#d99a3d"></div>
+      <div class="tl" style="background:#4fae6e"></div>
+      <div id="barTitle">dsh-safe-restart.ps1</div>
+    </div>
+    <div id="term">
+      <div class="l dim">PS&gt; .\dsh-safe-restart.ps1</div>
+      <div class="l"><span class="bl">[1/4]</span> dry-run 预检</div>
+      <div class="l">  bundles ....... <span class="rd">27 → 2</span></div>
+      <div class="l">  patch.yml ..... <span class="rd">197 行 → 661 B</span></div>
+      <div class="l hl"><span class="am">NO-ENTRY</span> our-free-model</div>
+      <div class="l"><span class="rd">ABORT: broken bundles</span></div>
+      <div class="l dim">         nothing was restarted</div>
+      <div class="l">&nbsp;</div>
+      <div class="l"><span class="bl">[2/4]</span> 快照 patch.yml</div>
+      <div class="l"><span class="bl">[3/4]</span> 重启 → 健康检查</div>
+      <div class="l"><span class="bl">[4/4]</span> <span class="gn">✓ 27 bundles imported</span></div>
+      <div class="l"><span class="gn">exit 0</span>  <span class="dim">— 护栏生效</span></div>
+    </div>
+  </div>
+
+  <div id="foot">
+    <div class="pill"><span class="dot"></span>开源 · GPL v3</div>
+    <div class="pill mono">github.com/c00d002/dsh-safe-restart</div>
+  </div>
+
+  <div id="nums">
+    <div class="n"><div class="v bad">27</div><div class="k">BUNDLES</div></div>
+    <div class="n"><div class="v ok">4</div><div class="k">STEPS</div></div>
+  </div>
+
+  <div id="vig"></div>
+</div>
+</body>
+</html>

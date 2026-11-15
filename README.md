@@ -87,22 +87,45 @@ dry-run 检查的是真实的 `import()` 能否成功，所以这类问题在重
 
 ### 安装
 
-需要 Windows + PowerShell（7 推荐，5.1 也能跑）。
+**不需要装 PowerShell 7。** Windows 10 / 11 自带的 Windows PowerShell 5.1 就够 —— 本仓库的所有脚本和 `.cmd` 启动器都是在 5.1 上测的。
 
-```powershell
-# 1. 把仓库放到任意目录
-git clone https://github.com/<you>/dsh-safe-restart.git
+依赖只有三个，而且都不用你装：
 
-# 2. 进目录，创建桌面快捷方式
-pwsh -File install.ps1
+| 依赖 | 谁提供 |
+| --- | --- |
+| Windows PowerShell 5.1 | 系统自带（Win10 1809+ / Win11） |
+| .NET Framework 4.5+ | 系统自带，WPF 界面靠它 |
+| Node.js | **DSH 自己带的**，脚本会自动去 `dsh-runtimes\*\dependencies\node\bin\node.exe` 找 |
+
+所以对使用者的要求只有一句：**装了 DSH 就能用**。
+
+> 顺带一提：Windows 7 自带的是 PowerShell **2.0**，跑不了 —— WPF 那部分语法和 `ConvertTo-Json -Depth` 都要 PowerShell **3.0+**。不过 Win7 现在也装不了 DSH，所以实际碰不到。
+
+```bat
+:: 1. 把仓库放到任意目录
+git clone https://github.com/c00d002/dsh-safe-restart.git
+
+:: 2. 进目录，创建桌面快捷方式
+powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1
 ```
 
 桌面会出现「**重启DSH（安全）**」，双击即用。
 
+> **⚠ 双击 `.cmd`，不要双击 `.ps1`**
+>
+> Windows 默认执行策略是 `Restricted`，直接运行 `.ps1` 会报：
+>
+> ```
+> 无法加载文件 ...\xxx.ps1，因为在此系统上禁止运行脚本。
+> SecurityError: UnauthorizedAccess
+> ```
+>
+> 仓库里的 `.cmd` 启动器已经带上 `-ExecutionPolicy Bypass`，**只对这一次调用生效**，不改你的系统设置。要走命令行的话就照上面的写法带上这个参数。
+
 卸载快捷方式：
 
-```powershell
-pwsh -File install.ps1 -Uninstall
+```bat
+powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Uninstall
 ```
 
 ### 日常使用
@@ -113,22 +136,41 @@ pwsh -File install.ps1 -Uninstall
 
 ### 命令行
 
+下面用 `powershell`（5.1）写，如果你装了 7，换成 `pwsh` 也一样。
+
 ```powershell
 # 正常重启（预检 + 快照 + 重启 + 健康检查 + 回滚）
-pwsh -File dsh-safe-restart.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File dsh-safe-restart.ps1
 
 # 只检查不重启：看预检结果、生成快照，然后退出
-pwsh -File dsh-safe-restart.ps1 -DryRun
+powershell -NoProfile -ExecutionPolicy Bypass -File dsh-safe-restart.ps1 -DryRun
 
 # 指定 profile（默认自动选 desktop）
-pwsh -File dsh-safe-restart.ps1 -ProfileName work
+powershell -NoProfile -ExecutionPolicy Bypass -File dsh-safe-restart.ps1 -ProfileName work
 
 # 延长健康检查等待（默认 60 秒，插件多的机器可以调大）
-pwsh -File dsh-safe-restart.ps1 -WaitSec 120
+powershell -NoProfile -ExecutionPolicy Bypass -File dsh-safe-restart.ps1 -WaitSec 120
 
 # 跳过预检（不推荐，只在预检本身有 bug 时用）
-pwsh -File dsh-safe-restart.ps1 -SkipSimulate
+powershell -NoProfile -ExecutionPolicy Bypass -File dsh-safe-restart.ps1 -SkipSimulate
 ```
+
+### 图形界面（推荐给不想看命令行的人）
+
+```bat
+:: 打开检查窗口：列出每个插件能不能加载，有问题会标红
+2-看现状.cmd
+```
+
+窗口里有三个按钮：
+
+| 按钮 | 干什么 |
+| --- | --- |
+| 关闭 | 什么都不改 |
+| 恢复快照 / 恢复备份 | 把配置退回上次好的状态，然后重启 |
+| 停用并重启 | 把加载失败的插件从启动清单里摘掉，然后重启 |
+
+「恢复」的三种情况：有快照就用快照；没快照就去翻 `package.json.bak-*` 挑插件最多的那份；两样都没有时按钮不显示。
 
 ### 退出码
 
@@ -189,6 +231,14 @@ pwsh -File dsh-safe-restart.ps1 -SkipSimulate
 
 ## 常见问题
 
+**Q: 需要装 PowerShell 7 吗？**
+
+不用。Windows 10 / 11 自带的 Windows PowerShell 5.1 就行，本仓库全部测试都在 5.1 上做的。装了 7 也能跑，把命令里的 `powershell` 换成 `pwsh` 即可。
+
+**Q: 双击 `.ps1` 报「因为在此系统上禁止运行脚本」？**
+
+你的执行策略是 `Restricted`（Windows 默认）。别改系统设置，**双击仓库里的 `.cmd` 就行** —— 它们带 `-ExecutionPolicy Bypass`，只对当次运行生效。命令行同理，加上 `-ExecutionPolicy Bypass` 这个参数。
+
 **Q: 提示 `exit 3` 但我看插件都好好的？**
 
 dry-run 检查的是「现在这一刻能不能 import」，不是「你上次用得好不好」。八成是：
@@ -200,6 +250,13 @@ dry-run 检查的是「现在这一刻能不能 import」，不是「你上次�
 **Q: 快照会占很多空间吗？**
 
 一份快照三个文件，通常几十 KB。脚本不会自动清理，攒多了自己删 `snapshots` 下的旧目录即可。
+
+**Q: 如果崩了之后才第一次打开这个工具，还有救吗？**
+
+有。窗口里那个按钮会自动换名字：
+- 之前跑过工具 → 显示「恢复快照 N 个」
+- 之前没跑过 → 自动去 profile 目录翻 `package.json.bak*`，挑插件数最多的那份 → 显示「恢复备份 N 个」
+- 连 bak 都没有 → 按钮不出现，只能手动重装插件
 
 **Q: 能用于 Web 版 DSH 吗？**
 

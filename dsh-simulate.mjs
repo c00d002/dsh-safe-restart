@@ -97,12 +97,17 @@ for (const name of bundles) {
 }
 
 const pad = (s, n) => String(s).padEnd(n);
+const jsonMode = process.argv.includes('--json');
+if (jsonMode) {
+  process.stdout.write('__JSON__' + JSON.stringify({ profile: profileDir, total: bundles.length, rows }) + '\n');
+} else {
 console.log(pad('STATUS', 9), pad('BUNDLE', 40), pad('VER', 10), 'DETAIL');
 console.log('-'.repeat(110));
 for (const r of rows) {
   console.log(pad(r.status, 9), pad(r.name.slice(0, 39), 40), pad(r.ver || '', 10), r.detail);
 }
 console.log('');
+}
 
 // cordis.patch.yml sanity
 const patchPath = join(profileDir, 'cordis.patch.yml');
@@ -114,11 +119,15 @@ if (existsSync(patchPath)) {
     patchStatus += ' (JSON-ish flow list at top)';
   }
 }
-console.log(`cordis.patch.yml : ${patchStatus}`);
+if (!jsonMode) console.log(`cordis.patch.yml : ${patchStatus}`);
 
 const missing = rows.filter((r) => r.status === 'MISSING');
 const fails = rows.filter((r) => r.status === 'FAIL' || r.status === 'BAD-PKG' || r.status === 'NO-ENTRY');
 const dupes = bundles.filter((n, i) => bundles.indexOf(n) !== i);
+
+if (jsonMode) {
+  process.exit(fails.length ? 2 : 0);
+}
 
 if (missing.length) console.log(`missing   : ${missing.map((r) => r.name).join(', ')}`);
 if (dupes.length) console.log(`duplicate : ${[...new Set(dupes)].join(', ')}`);
