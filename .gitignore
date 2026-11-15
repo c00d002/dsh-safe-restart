@@ -1,0 +1,12 @@
+# 渲染中间产物
+promo/out/
+promo/smoke/
+promo/audio_bed.wav
+promo/*.mp4
+
+# 系统
+Thumbs.db
+.DS_Store
+
+# 临时产物
+promo/cta_check.png

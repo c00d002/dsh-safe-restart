@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>DSH Safe Restart — 推广片</title>
+<link rel="stylesheet" href="fonts/notoserifsc.css">
+<style>
+@font-face{font-family:'Instrument Serif';src:url(fonts/instrument-serif-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal}
+@font-face{font-family:'Instrument Serif';src:url(fonts/instrument-serif-latin-400-italic.woff2) format('woff2');font-weight:400;font-style:italic}
+@font-face{font-family:'JetBrains Mono';src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'JetBrains Mono';src:url(fonts/jetbrains-mono-latin-700-normal.woff2) format('woff2');font-weight:700}
+
+/* ====== Theme B 深色科技 ====== */
+:root{
+  --paper:#0a0d16; --card:#11141f; --card2:#171b28;
+  --ink:#f2f4f8; --ink2:#c7cbd6; --mut:#78808f;
+  --line:#232837; --line2:#2d3346;
+  --blue:#5b79ff; --blueSoft:#1a2140; --blueLine:#2c3a6e;
+  --acc:#e86a3d; --accSoft:#3a241c;
+  --green:#4fae6e; --greenSoft:#15291c;
+  --amber:#d99a3d; --amberSoft:#33270f;
+  --red:#e05a3a; --redSoft:#371a12; --navy:#151d33;
+  --sans:'Segoe UI','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono',Consolas,monospace;
+  --disp:'Instrument Serif','Noto Serif SC',serif;
+  --shadow:0 42px 90px rgba(0,0,0,.5),0 14px 30px rgba(0,0,0,.35);
+  --shadowSm:0 10px 26px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden}
+body{background:var(--paper);font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;overflow:hidden;
+  background:radial-gradient(1200px 700px at 26% 10%,rgba(91,121,255,.10),rgba(91,121,255,0) 62%),
+             radial-gradient(1400px 900px at 82% 94%,rgba(232,106,61,.07),rgba(232,106,61,0) 64%),var(--paper)}
+#world{position:absolute;inset:0;will-change:transform,filter}
+#vignette{position:absolute;inset:0;pointer-events:none;z-index:60;
+  background:radial-gradient(130% 100% at 50% 42%,rgba(0,0,0,0) 52%,rgba(0,0,0,.55) 100%)}
+#grain{position:absolute;inset:-80px;pointer-events:none;z-index:61;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E")}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:70}
+
+/* ====== 终端窗口（右侧，左边留给字幕） ====== */
+#win{position:absolute;left:735px;top:195px;width:1110px;height:660px;border-radius:16px;background:#0b0e15;
+  border:1px solid var(--line2);box-shadow:var(--shadow);overflow:hidden}
+#tbar{height:42px;background:var(--card2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;padding:0 16px;gap:9px}
+#tbar .dotr{width:10px;height:10px;border-radius:50%;background:#3a4055}
+#tbar .dotr.r{background:#e05a3a}#tbar .dotr.y{background:#d99a3d}#tbar .dotr.g{background:#4fae6e}
+#tbar .title{font-family:var(--mono);font-size:12px;color:var(--mut);margin-left:10px}
+#term{position:absolute;left:0;top:42px;right:0;bottom:0;padding:22px 26px;overflow:hidden}
+.ln{font-family:var(--mono);font-size:18px;line-height:1.62;color:var(--ink2);white-space:pre;opacity:0}
+.ln .k{color:var(--blue)}
+.ln .ok{color:var(--green)}
+.ln .warn{color:var(--amber)}
+.ln .bad{color:var(--red);font-weight:700}
+.ln .dim{color:var(--mut)}
+.ln.big{font-size:19px;font-weight:700;color:var(--red)}
+
+/* ====== 字幕（左侧单栏） ====== */
+.cap{position:absolute;left:104px;width:600px;z-index:40}
+.cap .eyebrow{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:.2em;color:var(--acc)}
+.cap .h{font-family:var(--disp);font-size:58px;line-height:1.20;color:var(--ink);margin-top:14px;white-space:nowrap}
+.cap .desc{font-family:var(--disp);font-size:23px;line-height:1.60;color:var(--ink2);margin-top:20px}
+.cap .foot{display:flex;align-items:center;gap:11px;margin-top:24px;font-size:14px;color:var(--mut);font-family:var(--mono)}
+.cap .foot::before{content:'';width:30px;height:2.5px;background:var(--acc);border-radius:2px}
+.cap .subchip{display:inline-flex;align-items:center;gap:9px;margin-top:24px;height:42px;padding:0 18px;border-radius:999px;
+  background:var(--redSoft);border:1px solid #6b2a1c;color:var(--red);font-family:var(--mono);font-size:17px;font-weight:700}
+#scrim{position:absolute;inset:0;z-index:30;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,rgba(10,13,22,.98) 0%,rgba(10,13,22,.95) 28%,rgba(10,13,22,0) 38%)}
+
+/* ====== 标题卡 / 结尾卡 ====== */
+#titlecard,#endcard{position:absolute;inset:0;z-index:45;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;visibility:hidden}
+#titlecard .ic,#endcard .ic{width:112px;height:112px;border-radius:26px;overflow:hidden;box-shadow:0 26px 60px rgba(91,121,255,.30)}
+#titlecard .wm,#endcard .wm{font-family:var(--disp);font-size:96px;color:var(--ink);margin-top:30px}
+#titlecard .tg,#endcard .tg{font-family:var(--disp);font-size:27px;color:var(--ink2);margin-top:16px}
+#titlecard .st,#endcard .st{font-family:var(--mono);font-size:13.5px;letter-spacing:.16em;color:var(--mut);margin-top:20px}
+#endcard .kw{display:flex;margin-top:38px}
+#endcard .kw .k{display:flex;flex-direction:column;align-items:center;padding:0 32px;border-right:1px solid var(--line2)}
+#endcard .kw .k:last-child{border-right:none}
+#endcard .kw .k b{font-family:var(--disp);font-size:43px;color:var(--ink);font-weight:400}
+#endcard .kw .k span{font-family:var(--mono);font-size:11.5px;color:var(--mut);margin-top:8px}
+#endcard .cta{margin-top:38px;height:54px;padding:0 32px;border-radius:999px;background:var(--ink);color:var(--paper);
+  display:flex;align-items:center;gap:12px;font-size:17.5px;font-weight:600}
+#endcard .ft{margin-top:22px;font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--mut)}
+
+/* 光标 */
+#cursor{position:absolute;z-index:50;left:0;top:0;will-change:transform;visibility:hidden}
+#cursor .c{width:14px;height:14px;border-radius:50%;background:var(--ink);opacity:.9;transform:translate(-50%,-50%)}
+#cursor .ring{position:absolute;left:0;top:0;width:52px;height:52px;border-radius:50%;border:2.5px solid rgba(242,244,248,.55);
+  transform:translate(-50%,-50%) scale(.4);opacity:0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="world">
+    <div id="win">
+      <div id="tbar">
+        <div class="dotr r"></div><div class="dotr y"></div><div class="dotr g"></div>
+        <div class="title">PowerShell 7 — dsh-safe-restart</div>
+      </div>
+      <div id="term"></div>
+    </div>
+  </div>
+
+  <div id="scrim"></div>
+
+  <div class="cap" id="cap0">
+    <div class="eyebrow" id="cap0-e">01 / 事故</div>
+    <div class="h" id="cap0-h1">重启一次</div>
+    <div class="h" id="cap0-h2">三十多个插件全没了</div>
+    <div class="subchip" id="cap0-s">cordis.patch.yml → 661 B</div>
+  </div>
+
+  <div class="cap" id="cap1">
+    <div class="eyebrow" id="cap1-e">02 / 护栏</div>
+    <div class="h" id="cap1-h">重启前先问一遍</div>
+    <div class="desc" id="cap1-d">每个插件，真的都能加载吗？</div>
+    <div class="foot" id="cap1-f">exit 3 · 什么都没动</div>
+  </div>
+
+  <div id="titlecard">
+    <div class="ic" id="t-ic"></div>
+    <div class="wm" id="t-wm">DSH Safe Restart</div>
+    <div class="tg" id="t-tg">重启前的四道护栏</div>
+    <div class="st" id="t-st">FOR DEEPSEEK HARNESS DESKTOP</div>
+  </div>
+
+  <div id="endcard">
+    <div class="ic" id="k-ic"></div>
+    <div class="wm" id="k-wm">DSH Safe Restart</div>
+    <div class="tg" id="k-tg">预检 · 快照 · 健康检查 · 自动回滚</div>
+    <div class="kw" id="k-kw">
+      <div class="k"><b>27</b><span>BUNDLES 逐个校验</span></div>
+      <div class="k"><b>4</b><span>阶段全自动</span></div>
+      <div class="k"><b>exit 3</b><span>拦下坏重启</span></div>
+    </div>
+    <div class="cta" id="k-cta">github.com/TNT460/dsh-safe-restart</div>
+    <div class="ft" id="k-ft">MIT LICENSE · POWERSHELL · 零依赖</div>
+  </div>
+
+  <div id="cursor"><div class="ring" id="cur-ring"></div><div class="c"></div></div>
+  <div id="vignette"></div>
+  <div id="grain"></div>
+  <div id="fade"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const mix=(a,b,k)=>a+(b-a)*k;
+const E={
+  outExpo:t=>t>=1?1:1-Math.pow(2,-10*t),
+  outCubic:t=>1-Math.pow(1-t,3),
+  inOut:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,
+  outBack:t=>{const c=1.9;t-=1;return 1+t*t*((c+1)*t+c)},
+};
+function seg(t,t0,t1,e){if(e===undefined)e=E.outExpo;if(t1<=t0)return t>=t1?1:0;return e(clamp((t-t0)/(t1-t0),0,1))}
+function T(el,o){
+  let tr='';const x=o.x||0,y=o.y||0;
+  if(x||y)tr+=`translate(${x}px,${y}px) `;
+  if(o.r)tr+=`rotate(${o.r}deg) `;
+  if(o.s!=null&&o.s!==1)tr+=`scale(${o.s}) `;
+  el.style.transform=tr||'none';
+  el.style.opacity=o.o==null?1:o.o;
+  let f='';if(o.b)f+=`blur(${o.b}px) `;if(o.br!=null&&o.br!==1)f+=`brightness(${o.br}) `;
+  el.style.filter=f||'none';
+}
+function capIn(t,t0,el,dy){const k=seg(t,t0,t0+.55);T(el,{y:mix(dy==null?34:dy,0,k),o:k,b:mix(13,0,k)})}
+function capOut(t,t1,el){const k=seg(t,t1,t1+.28);el.style.opacity=1-k;el.style.filter=k>0?`blur(${6*k}px)`:''}
+function pop(t,t0,el,amp){const k=seg(t,t0,t0+.5,E.outBack);T(el,{s:mix(amp==null?.7:amp,1,k),o:seg(t,t0,t0+.25)})}
+
+const iconSVG=s=>`<div style="width:100%;height:100%;background:linear-gradient(140deg,#5b79ff,#3c50d8 55%,#1f2a63);display:flex;align-items:center;justify-content:center;position:relative">
+<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><path d="M12 2.8l7 2.6v6.1c0 4.3-2.9 7.7-7 9.7-4.1-2-7-5.4-7-9.7V5.4l7-2.6z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.6 12.1l2.5 2.5 4.4-4.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div style="position:absolute;right:8px;bottom:8px;width:9px;height:9px;border-radius:50%;background:var(--acc)"></div></div>`;
+$('t-ic').innerHTML=iconSVG(52);$('k-ic').innerHTML=iconSVG(52);
+
+/* ============ 终端行 ============
+   hideAt: 该时间点后隐藏（用于第一幕的事故残骸，第二幕清屏） */
+const LINES=[
+  /* --- 第一幕：事故（0.8 - 4.2）--- */
+  {t:0.75, hi:4.05, html:'<span class="k">PS&gt;</span> exit   <span class="dim">(强制关掉 DSH)</span>', cls:''},
+  {t:1.15, hi:4.05, html:'<span class="dim">... 重新启动 DeepSeek Harness ...</span>', cls:''},
+  {t:1.60, hi:4.05, html:'<span class="bad">web boot: 1 entry did not activate</span>', cls:''},
+  {t:1.95, hi:4.05, html:'<span class="dim">  @ebony-vinyl/dsh-our-free-model: import failed</span>', cls:'dim'},
+  {t:2.35, hi:4.05, html:'<span class="bad">client-modules: duplicate factory registration</span>', cls:''},
+  {t:2.80, hi:4.05, html:'', cls:''},
+  {t:3.05, hi:4.05, html:'<span class="warn">grep bundles package.json</span>  <span class="dim">27 → 2</span>', cls:''},
+  {t:3.45, hi:4.05, html:'<span class="warn">wc -l cordis.patch.yml</span>       <span class="dim">197 → 22 行</span>', cls:''},
+  {t:3.85, hi:4.05, html:'<span class="dim">(没有任何报错弹窗，也没有备份)</span>', cls:'dim'},
+
+  /* --- 第二幕：dry-run（9.1 - 16.2）--- */
+  {t:9.10, html:'<span class="k">PS&gt;</span> pwsh -File dsh-safe-restart.ps1', cls:''},
+  {t:9.70, html:'==== dsh-safe-restart ====', cls:'dim'},
+  {t:10.05,html:'exe        : D:\\deep seek\\DeepSeek Harness.exe', cls:'dim'},
+  {t:10.40,html:'profile    : %USERPROFILE%\\.dsh\\profiles\\desktop', cls:'dim'},
+  {t:10.75,html:'simulate   : dsh-simulate.mjs', cls:'dim'},
+  {t:11.30,html:'dry-run: 检查 bundle 入口能否被 import', cls:''},
+  {t:11.75,html:'  <span class="ok">OK</span>        billion-context          0.1.215', cls:''},
+  {t:12.02,html:'  <span class="ok">OK</span>        dsh-plugin-health        3.2.0', cls:''},
+  {t:12.29,html:'  <span class="ok">OK</span>        dsh-tool-switch          0.2.2', cls:''},
+  {t:12.56,html:'  <span class="ok">OK</span>        whale_craft              0.2.0-beta', cls:''},
+  {t:12.83,html:'  <span class="ok">OK</span>        @liustack/modlens        3.27.4', cls:''},
+  {t:13.10,html:'  <span class="dim">HOSTDEP</span>   dsh-better-sidebar       0.32.1', cls:'dim'},
+  {t:13.45,html:'  <span class="bad">NO-ENTRY  ds-harness-remote        0.6.5</span>', cls:''},
+  {t:13.85,html:'  <span class="dim">      dist/index.js not found（目录只剩 92 KB）</span>', cls:'dim'},
+  {t:14.45,html:'  cordis.patch.yml : 209 lines, 6127 bytes', cls:''},
+  {t:15.05,html:'<span class="bad">ABORT: 预检发现无法 import 的 bundle，什么都没有改动</span>', cls:'big'},
+  {t:15.55,html:'<span class="dim">exit code 3</span>', cls:'dim'},
+];
+
+/* ================= 时间轴 32s ================= */
+window.__FPS=30; window.__DUR=32;
+
+const T_TT=4.4, T_TT1=8.4, S0=8.6, T_END=26.6, T_OUT=30.6;
+
+/* 摄像机：{t,x,y,s,b,br} */
+const CAM=[
+ {t:0,    x:975, y:525, s:1.00, b:0,  br:1},
+ {t:3.6,  x:980, y:530, s:1.03, b:0,  br:1},
+ {t:T_TT, x:960, y:540, s:0.90, b:12, br:0.80},
+ {t:8.0,  x:960, y:540, s:0.905,b:12, br:0.80},
+ {t:S0,   x:975, y:525, s:1.00, b:0,  br:1},
+ {t:13.0, x:978, y:535, s:1.05, b:0,  br:1},
+ {t:15.6, x:975, y:548, s:1.10, b:0,  br:1},
+ {t:18.5, x:975, y:528, s:1.00, b:0,  br:1},
+ {t:21.5, x:975, y:525, s:1.00, b:0,  br:1},
+ {t:T_END,x:960, y:540, s:0.90, b:12, br:0.80},
+ {t:30.0, x:960, y:540, s:0.905,b:12, br:0.78},
+ {t:32,   x:960, y:540, s:0.91, b:12, br:0.76},
+];
+function camera(t){
+  let i=0;while(i<CAM.length-1&&t>=CAM[i+1].t)i++;
+  const a=CAM[i],b=CAM[Math.min(i+1,CAM.length-1)];
+  if(a===b||t<a.t)return a;
+  const d=Math.min(0.55,(b.t-a.t)*0.9);
+  const k=E.inOut(clamp((t-(b.t-d))/d,0,1));
+  return {x:mix(a.x,b.x,k),y:mix(a.y,b.y,k),s:mix(a.s,b.s,k),b:mix(a.b,b.b,k),br:mix(a.br,b.br,k)};
+}
+
+/* 光标（world 坐标） */
+const CPATH=[[8.5,1500,980],[9.02,905,900],[9.55,905,900],[15.2,1180,860]];
+const CLICKS=[9.10];
+function cursorAt(t){
+  if(t<CPATH[0][0])return null;
+  for(let i=0;i<CPATH.length-1;i++){
+    const a=CPATH[i],b=CPATH[i+1];
+    if(t>=a[0]&&t<b[0]){const k=E.inOut(clamp((t-a[0])/(b[0]-a[0]),0,1));return[mix(a[1],b[1],k),mix(a[2],b[2],k)]}
+  }
+  const l=CPATH[CPATH.length-1];return[l[1],l[2]];
+}
+
+/* ================= 每帧渲染 ================= */
+const world=$('world'),cur=$('cursor'),ring=$('cur-ring'),grain=$('grain'),scrim=$('scrim'),fade=$('fade');
+const lineEls=LINES.map(L=>{
+  const d=document.createElement('div');d.className='ln '+L.cls;d.innerHTML=L.html;
+  $('term').appendChild(d);return {el:d,t:L.t,hi:L.hi};
+});
+
+function render(t){
+  const c=camera(t);
+  world.style.transform=`translate(${960-c.x}px,${540-c.y}px) scale(${c.s})`;
+  world.style.filter=(c.b?`blur(${c.b}px) `:'')+(c.br!==1?`brightness(${c.br})`:'');
+  const fi=Math.floor(t*window.__FPS);
+  grain.style.backgroundPosition=`${(fi*53)%240}px ${(fi*97)%240}px`;
+
+  /* 终端逐行（带 hideAt）：隐藏时 display:none，避免透明行占高度 */
+  lineEls.forEach(({el,t:t0,hi})=>{
+    const k=seg(t,t0,t0+0.22);
+    const off=hi!=null?seg(t,hi,hi+0.18):0;
+    const vis=Math.max(0,k*(1-off));
+    el.style.display=vis<0.04?'none':'';
+    el.style.opacity=vis;
+    el.style.transform=`translateY(${mix(8,0,k)}px)`;
+  });
+
+  /* 字幕遮罩（取两者最大，别互相覆盖） */
+  let scrimT=0;
+
+  /* 字幕 1：事故 */
+  {
+    const ti=1.0,to=4.1,el=$('cap0');
+    const g=t>=ti-0.05&&t<=to+0.3;
+    el.style.visibility=g?'visible':'hidden';
+    if(g){
+      ['e','h1','h2','s'].forEach((p,i)=>capIn(t,ti+i*.13,$('cap0-'+p)));
+      capOut(t,to,el);
+      if(t<to)scrimT=Math.max(scrimT,seg(t,ti,ti+.4));
+    }
+  }
+
+  /* 字幕 2：护栏 */
+  {
+    const ti=16.8,to=25.8,el=$('cap1');
+    const g=t>=ti-0.05&&t<=to+0.3;
+    el.style.visibility=g?'visible':'hidden';
+    if(g){
+      ['e','h','d','f'].forEach((p,i)=>capIn(t,ti+i*.13,$('cap1-'+p)));
+      capOut(t,to,el);
+      if(t<to)scrimT=Math.max(scrimT,seg(t,ti,ti+.4));
+    }
+  }
+  scrim.style.opacity=scrimT*.94*(1-0.42*seg(t,18.9,19.8));
+
+  /* 标题卡 */
+  const gt=t>=T_TT-0.05&&t<T_TT1+0.2;
+  $('titlecard').style.visibility=gt?'visible':'hidden';
+  if(gt){
+    pop(t,T_TT+.15,$('t-ic'),.6);
+    capIn(t,T_TT+.3,$('t-wm'),36);capIn(t,T_TT+.55,$('t-tg'),24);capIn(t,T_TT+.8,$('t-st'),18);
+    $('titlecard').style.opacity=Math.min(seg(t,T_TT,T_TT+.3),1-seg(t,T_TT1-.25,T_TT1+.15));
+  }
+
+  /* 结尾卡 */
+  const ge=t>=T_END-0.05;
+  $('endcard').style.visibility=ge?'visible':'hidden';
+  if(ge){
+    pop(t,T_END+.15,$('k-ic'),.6);
+    capIn(t,T_END+.3,$('k-wm'),36);capIn(t,T_END+.55,$('k-tg'),24);
+    [...$('k-kw').children].forEach((k,i)=>{const t0=T_END+.9+i*.1;
+      T(k,{o:seg(t,t0,t0+.3),y:mix(26,0,seg(t,t0,t0+.45,E.outBack))})});
+    const kc=seg(t,T_END+1.5,T_END+1.8,E.outBack);
+    T($('k-cta'),{o:seg(t,T_END+1.5,T_END+1.65),s:mix(.92,1,kc),y:mix(20,0,kc)});
+    capIn(t,T_END+2.0,$('k-ft'),16);
+    $('endcard').style.opacity=Math.min(seg(t,T_END,T_END+.3),1-seg(t,31.4,32));
+  }
+
+  fade.style.opacity=seg(t,T_OUT,window.__DUR,E.inOut)*0.96;
+
+  /* 光标 */
+  const cp=cursorAt(t);
+  if(cp&&t<15.0){
+    cur.style.visibility='visible';
+    cur.style.transform=`translate(${cp[0]}px,${cp[1]}px) scale(${1/c.s})`;
+    let pulse=0;
+    for(const ct of CLICKS){const k=seg(t,ct,ct+.4,E.outCubic);if(k>0&&k<1)pulse=Math.max(pulse,k)}
+    ring.style.opacity=pulse*.9;
+    ring.style.transform=`translate(-50%,-50%) scale(${mix(.4,1.5,pulse)})`;
+  }else cur.style.visibility='hidden';
+}
+
+window.__seek=function(t){render(clamp(t,0,window.__DUR))};
+window.__ready=false;
+(async()=>{try{await document.fonts.ready}catch(e){}
+  render(0);render(2);render(13);
+  window.__ready=true})();
+</script>
+</body>
+</html>
