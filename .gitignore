@@ -3,6 +3,7 @@ promo/out/
 promo/smoke/
 promo/audio_bed.wav
 promo/*.mp4
+!promo/dsh-safe-restart-v2.mp4
 
 # 系统
 Thumbs.db
