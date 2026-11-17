@@ -268,6 +268,27 @@ dry-run 检查的是「现在这一刻能不能 import」，不是「你上次�
 
 ---
 
+## 附带工具：清理 DSH 登录缓存
+
+**这是另一个坑，和重启保护无关，但同样会让 DSH「打不开」。**
+
+DSH 每次启动都会往 `%APPDATA%\@deepseek-ai\dsh-desktop\Network\Cookies` 写一条登录 cookie，**从不清理**。攒到请求头 16 KB 之后，DSH 启动时会报 `Web authentication failed`，表现就是「**双击没反应 / 打不开**」。
+
+这不是插件问题，也不是配置坏了——删掉两个文件就好。聊天记录、工作区、插件全在 `.dsh` 目录里，一点不受影响。
+
+`清理DSH登录缓存.bat` 就做这一件事：
+
+- 双击运行，先检测 DSH 是否在跑
+- 在跑就等你完全退出（窗口关掉不算，要托盘右键退出或任务管理器结束进程），退出后自动继续
+- 删掉 `Cookies` 和 `Cookies-journal`
+- 提示完成，然后正常启动 DSH
+
+**为什么需要它**：DSH 自己没有「清缓存」按钮，官方文档也没写这个坑。这个脚本是从真实故障里抠出来的——攒了大概两个月，某天双击 DSH 直接弹 `Web authentication failed`，重装都没用，最后才定位到是 cookie 文件涨到 16 KB 触发了 HTTP 431。
+
+**建议**：一个月跑一次，或者发现 DSH 启动变慢、偶尔打不开时先跑一遍。
+
+---
+
 ## 目录结构
 
 ```
@@ -275,6 +296,7 @@ dsh-safe-restart.ps1       主脚本（预检 / 快照 / 重启 / 健康检查 /
 dsh-safe-restart-ui.ps1    图形入口（确认框 + 结果弹窗）
 dsh-simulate.mjs           dry-run 实现：用 Node 逐个 import bundle 入口
 install.ps1                创建 / 删除桌面快捷方式
+清理DSH登录缓存.bat        附带工具：清掉让 DSH 打不开的 cookie 缓存
 README.md                 中文
 README.en.md              英文
 LICENSE
